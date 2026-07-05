@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import "../src/models/index.js";
 
 const connectDB = async () => {
     try {
