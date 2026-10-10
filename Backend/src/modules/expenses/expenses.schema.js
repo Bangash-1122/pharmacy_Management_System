@@ -1,23 +1,15 @@
-import mongoose from "mongoose";
+const { z } = require('zod');
 
-const { Schema } = mongoose;
+const expenseSchema = z.object({
+  category: z.enum(['Rent', 'Electricity', 'Salaries', 'Supplies', 'Repairs', 'Marketing', 'Taxes', 'Misc']).default('Misc'),
+  amount: z.number().min(1, 'Amount must be greater than 0'),
+  description: z.string().min(2, 'Description is required'),
+  paymentMethod: z.string().default('cash'),
+  receiptUrl: z.string().optional().default(''),
+  expenseDate: z.string().optional(),
+  isRecurring: z.boolean().optional().default(false),
+});
 
-const expenseSchema = new Schema(
-    {
-        tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
-        branchId: { type: Schema.Types.ObjectId, ref: "Branch" },
-        category: { type: String, required: true, trim: true },
-        amount: { type: Number, required: true },
-        date: { type: Date, required: true, index: true },
-        description: String,
-        paymentMethod: String,
-        approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
-        createdBy: { type: Schema.Types.ObjectId, ref: "User" },
-    },
-    { timestamps: true }
-);
-
-expenseSchema.index({ tenantId: 1, date: -1 });
-expenseSchema.index({ tenantId: 1, category: 1, date: -1 });
-
-export default mongoose.model("Expense", expenseSchema);
+module.exports = {
+  expenseSchema,
+};

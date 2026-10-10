@@ -1,32 +1,32 @@
-import mongoose from "mongoose";
+const { z } = require('zod');
 
-const { Schema } = mongoose;
+const stockAdjustmentSchema = z.object({
+  medicineId: z.string().min(1, 'Medicine ID is required'),
+  batchId: z.string().min(1, 'Batch ID is required'),
+  type: z.string().default('Physical count correction'),
+  quantityDelta: z.number().refine((val) => val !== 0, { message: 'Quantity delta cannot be zero' }),
+  reason: z.string().min(3, 'Reason is required for inventory adjustments'),
+});
 
-const stockLedgerSchema = new Schema(
-    {
-        tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
-        branchId: { type: Schema.Types.ObjectId, ref: "Branch" },
-        medicineId: { type: Schema.Types.ObjectId, ref: "Medicine", required: true },
-        batchId: { type: Schema.Types.ObjectId, required: true },
-        type: {
-            type: String,
-            enum: ["purchase", "sale", "return", "adjustment", "transfer_in", "transfer_out", "count"],
-            required: true,
-        },
-        qty: { type: Number, required: true },
-        balanceAfter: Number,
-        ref: {
-            module: String,
-            documentId: Schema.Types.ObjectId,
-            documentNo: String,
-        },
-        notes: String,
-        createdBy: { type: Schema.Types.ObjectId, ref: "User" },
-    },
-    { timestamps: true }
-);
+const stockAuditStartSchema = z.object({
+  title: z.string().optional().default('Physical Stock Count Cycle'),
+  notes: z.string().optional().default(''),
+});
 
-stockLedgerSchema.index({ tenantId: 1, medicineId: 1, batchId: 1 });
-stockLedgerSchema.index({ tenantId: 1, medicineId: 1, batchId: 1, createdAt: -1 });
+const stockAuditSaveSchema = z.object({
+  countedItems: z.array(
+    z.object({
+      medicineId: z.string(),
+      batchId: z.string(),
+      physicalQty: z.number().min(0),
+      notes: z.string().optional().default(''),
+    })
+  ),
+  postAdjustments: z.boolean().optional().default(true),
+});
 
-export default mongoose.model("StockLedger", stockLedgerSchema);
+module.exports = {
+  stockAdjustmentSchema,
+  stockAuditStartSchema,
+  stockAuditSaveSchema,
+};

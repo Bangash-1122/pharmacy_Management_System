@@ -1,54 +1,40 @@
-import mongoose from "mongoose";
+const { z } = require('zod');
 
-const { Schema } = mongoose;
+const registerSchema = z.object({
+  pharmacyName: z.string().min(2, 'Pharmacy name must be at least 2 characters'),
+  pharmacyType: z.string().optional().default('Retail Pharmacy'),
+  ownerName: z.string().min(2, 'Owner name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(8, 'Phone number must be at least 8 digits'),
+  city: z.string().min(2, 'City is required'),
+  address: z.string().optional().default(''),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  planId: z.string().optional().default('free_trial'),
+});
 
-const sessionSchema = new Schema(
-    {
-        userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-        token: { type: String, required: true, unique: true },
-        deviceInfo: String,
-        ipAddress: String,
-        expiresAt: { type: Date, required: true },
-        isActive: { type: Boolean, default: true },
-    },
-    { timestamps: true }
-);
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
 
-sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(10, 'Refresh token is required'),
+});
 
-const otpSchema = new Schema(
-    {
-        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-        code: { type: String, required: true },
-        purpose: {
-            type: String,
-            enum: ["login", "reset", "2fa", "verify"],
-            required: true,
-        },
-        expiresAt: {
-            type: Date,
-            default: () => new Date(Date.now() + 5 * 60 * 1000),
-        },
-    },
-    { timestamps: true }
-);
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
 
-otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-otpSchema.index({ userId: 1, purpose: 1 });
+const resetPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  otp: z.string().min(4, 'OTP must be provided'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+});
 
-const rateLimitSchema = new Schema(
-    {
-        key: { type: String, required: true },
-        window: { type: Number, required: true },
-        count: { type: Number, default: 1 },
-        expiresAt: { type: Date, required: true },
-    },
-    { timestamps: true }
-);
-
-rateLimitSchema.index({ key: 1, window: 1 }, { unique: true });
-rateLimitSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
-export const Session = mongoose.model("Session", sessionSchema);
-export const Otp = mongoose.model("Otp", otpSchema);
-export const RateLimit = mongoose.model("RateLimit", rateLimitSchema);
+module.exports = {
+  registerSchema,
+  loginSchema,
+  refreshTokenSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+};

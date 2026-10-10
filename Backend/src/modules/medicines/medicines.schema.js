@@ -1,41 +1,43 @@
-import mongoose from "mongoose";
+const { z } = require('zod');
 
-const { Schema } = mongoose;
+const medicineSchema = z.object({
+  name: z.string().min(2, 'Medicine name is required'),
+  genericName: z.string().min(2, 'Generic name is required'),
+  composition: z.string().optional().default(''),
+  categoryId: z.string().nullable().optional(),
+  subCategory: z.string().optional().default(''),
+  brandId: z.string().nullable().optional(),
+  brandName: z.string().optional().default(''),
+  unitOfMeasure: z.string().optional().default('Tablet'),
+  packingSize: z.string().optional().default('1 Strip = 10 Tablets'),
+  unitsPerPack: z.number().min(1).default(10),
+  purchasePrice: z.number().min(0, 'Purchase price must be positive'),
+  salePrice: z.number().min(0, 'Sale price must be positive'),
+  mrp: z.number().optional().default(0),
+  discountPercent: z.number().min(0).max(100).default(0),
+  taxPercent: z.number().min(0).max(100).default(0),
+  minStockLevel: z.number().min(0).default(10),
+  reorderQuantity: z.number().min(0).default(50),
+  rackLocation: z.string().optional().default(''),
+  barcodes: z.array(z.string()).optional().default([]),
+  imageUrl: z.string().optional().default(''),
+  alternativeMedicineIds: z.array(z.string()).optional().default([]),
+  prescriptionRequired: z.boolean().optional().default(false),
+  narcoticFlag: z.boolean().optional().default(false),
+  notes: z.string().optional().default(''),
+});
 
-const batchSchema = new Schema(
-    {
-        batchNo: { type: String, required: true },
-        mfgDate: Date,
-        expiryDate: { type: Date, required: true, index: true },
-        supplierId: { type: Schema.Types.ObjectId, ref: "Supplier" },
-        purchasePrice: { type: Number, required: true },
-        qty: { type: Number, default: 0 },
-        isActive: { type: Boolean, default: true },
-    },
-    { _id: true }
-);
+const bulkUpdateSchema = z.object({
+  medicineIds: z.array(z.string()).min(1),
+  updates: z.object({
+    categoryId: z.string().optional(),
+    discountPercent: z.number().min(0).max(100).optional(),
+    taxPercent: z.number().min(0).max(100).optional(),
+    active: z.boolean().optional(),
+  }),
+});
 
-const medicineSchema = new Schema(
-    {
-        tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
-        name: { type: String, required: true, trim: true },
-        genericName: { type: String, trim: true },
-        category: { type: Schema.Types.ObjectId, ref: "Category" },
-        barcodes: [String],
-        salePrice: { type: Number, required: true },
-        mrp: Number,
-        taxPct: { type: Number, default: 0 },
-        minStock: { type: Number, default: 5 },
-        batches: [batchSchema],
-        prescriptionRequired: { type: Boolean, default: false },
-        isNarcotic: { type: Boolean, default: false },
-        isActive: { type: Boolean, default: true },
-    },
-    { timestamps: true }
-);
-
-medicineSchema.index({ tenantId: 1, name: "text", genericName: "text" });
-medicineSchema.index({ tenantId: 1, barcodes: 1 });
-medicineSchema.index({ tenantId: 1, "batches.expiryDate": 1 });
-
-export default mongoose.model("Medicine", medicineSchema);
+module.exports = {
+  medicineSchema,
+  bulkUpdateSchema,
+};

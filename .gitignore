@@ -1,27 +1,29 @@
-# Dependencies
+# Dependency directories
 node_modules/
-/Backend/node_modules/
+Backend/node_modules/
+Frontend/node_modules/
 
-# Environment variables
+# Production builds
+Frontend/dist/
+Frontend/dist-ssr/
+
+# Environment files
 .env
-.env.local
-/Backend/.env
+Backend/.env
+Backend/.env.local
+Frontend/.env
+Frontend/.env.local
 
-# Logs
+# Logs & Debugging
+*.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
+pnpm-debug.log*
 
-# IDE and Editor files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS files
+# Editor & OS files
+.DS_Store
 Thumbs.db
-ehthumbs.db
-Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.local

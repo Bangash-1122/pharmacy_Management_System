@@ -1,56 +1,43 @@
-import mongoose from "mongoose";
+const { z } = require('zod');
 
-const { Schema } = mongoose;
+const createPOSchema = z.object({
+  supplierId: z.string().min(1, 'Supplier ID is required'),
+  expectedDeliveryDate: z.string().optional(),
+  items: z.array(
+    z.object({
+      medicineId: z.string().min(1, 'Medicine ID is required'),
+      quantity: z.number().min(1, 'Quantity must be at least 1'),
+      expectedPrice: z.number().min(0, 'Price must be positive'),
+    })
+  ).min(1, 'At least 1 item is required'),
+  notes: z.string().optional().default(''),
+});
 
-const purchaseItemSchema = new Schema(
-    {
-        medicineId: { type: Schema.Types.ObjectId, ref: "Medicine", required: true },
-        batchNo: { type: String, required: true },
-        expiryDate: { type: Date, required: true },
-        qty: { type: Number, required: true },
-        purchasePrice: { type: Number, required: true },
-        mrp: Number,
-        lineTotal: Number,
-    },
-    { _id: false }
-);
+const createGRNSchema = z.object({
+  poId: z.string().nullable().optional(),
+  supplierId: z.string().min(1, 'Supplier ID is required'),
+  supplierInvoiceNo: z.string().min(1, 'Supplier invoice number is required'),
+  supplierInvoiceDate: z.string().optional(),
+  items: z.array(
+    z.object({
+      medicineId: z.string().min(1, 'Medicine ID is required'),
+      batchNo: z.string().min(1, 'Batch number is required'),
+      lotNo: z.string().optional().default(''),
+      mfgDate: z.string().optional(),
+      expiryDate: z.string().min(4, 'Expiry date is required'),
+      quantityReceived: z.number().min(1, 'Quantity received must be >= 1'),
+      bonusQuantity: z.number().optional().default(0),
+      purchasePrice: z.number().min(0, 'Purchase price must be >= 0'),
+      salePrice: z.number().min(0, 'Sale price must be >= 0'),
+      taxPercent: z.number().optional().default(0),
+    })
+  ).min(1, 'At least 1 item is required in GRN'),
+  paidAmount: z.number().optional().default(0),
+  paymentMethod: z.string().optional().default('credit'),
+  notes: z.string().optional().default(''),
+});
 
-const grnSchema = new Schema(
-    {
-        grnNumber: { type: String, required: true },
-        receivedAt: { type: Date, default: Date.now },
-        receivedBy: { type: Schema.Types.ObjectId, ref: "User" },
-        items: [purchaseItemSchema],
-        notes: String,
-    },
-    { _id: false }
-);
-
-const purchaseSchema = new Schema(
-    {
-        tenantId: { type: Schema.Types.ObjectId, ref: "Tenant", required: true, index: true },
-        branchId: { type: Schema.Types.ObjectId, ref: "Branch" },
-        poNumber: { type: String, required: true },
-        supplierId: { type: Schema.Types.ObjectId, ref: "Supplier", required: true },
-        items: [purchaseItemSchema],
-        subtotal: { type: Number, default: 0 },
-        tax: { type: Number, default: 0 },
-        discount: { type: Number, default: 0 },
-        grandTotal: { type: Number, default: 0 },
-        status: {
-            type: String,
-            enum: ["draft", "ordered", "partial", "received", "cancelled", "returned"],
-            default: "draft",
-        },
-        grn: grnSchema,
-        orderDate: { type: Date, default: Date.now },
-        expectedDate: Date,
-        createdBy: { type: Schema.Types.ObjectId, ref: "User" },
-    },
-    { timestamps: true }
-);
-
-purchaseSchema.index({ tenantId: 1, supplierId: 1, createdAt: -1 });
-purchaseSchema.index({ tenantId: 1, poNumber: 1 }, { unique: true });
-
-export default mongoose.model("Purchase", purchaseSchema);
+module.exports = {
+  createPOSchema,
+  createGRNSchema,
+};
