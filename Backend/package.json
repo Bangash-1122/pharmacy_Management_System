@@ -1,21 +1,40 @@
 {
-    "name": "backend",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "nodemon server.js"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "type": "module",
-    "dependencies": {
-        "bcrypt": "^6.0.0",
-        "express": "^5.2.1",
-        "mongoose": "^9.7.3",
-        "nodemon": "^3.1.14",
-        "zod": "^4.4.3"
-    }
+  "name": "pharmacy-management-system-api",
+  "version": "3.0.0",
+  "description": "Enterprise Multi-Tenant SaaS Pharmacy Management System Backend API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pharmacy",
+    "saas",
+    "multi-tenant",
+    "pos",
+    "inventory",
+    "fefo",
+    "pharmacy-management"
+  ],
+  "author": "Ubaid Bangash",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.0",
+    "morgan": "^1.10.0",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
 }
